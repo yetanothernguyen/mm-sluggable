@@ -3,22 +3,20 @@ require 'mongo_mapper'
 module MongoMapper
   module Plugins
     module Sluggable
-      def self.configure(model)
-        class << model
-          alias_method :origin_find, :find
-          def find(*args)
-            arg_f = args.first
-            if (args.size == 1) && arg_f.is_a?(String) && ( arg_f !~ /^[0-9a-f]{24}$/i )
-              options = slug_options
-              first options[:key] => arg_f
-            else
-              origin_find *args
-            end
-          end
-        end
-      end
+      extend ActiveSupport::Concern
 
       module ClassMethods
+        alias_method :origin_find, :find
+        def find(*args)
+          arg_f = args.first
+          if (args.size == 1) && arg_f.is_a?(String) && ( arg_f !~ /^[0-9a-f]{24}$/i )
+            options = slug_options
+            first options[:key] => arg_f
+          else
+            origin_find *args
+          end
+        end
+
         def sluggable(to_slug = :title, options = {})
           class_attribute :slug_options
 
@@ -28,13 +26,18 @@ module MongoMapper
             :index        => true,
             :method       => :parameterize,
             :scope        => nil,
-            :callback     => :before_validation_on_create,
+            :max_length   => 256,
+            :callback     => [:before_validation, {:on => :create}],
             :force        => false
           }.merge(options)
 
           key slug_options[:key], String, :index => slug_options[:index]
 
-          self.send(slug_options[:callback], :set_slug)
+          if slug_options[:callback].is_a?(Array)
+            self.send(slug_options[:callback][0], :set_slug, slug_options[:callback][1])
+          else
+            self.send(slug_options[:callback], :set_slug)
+          end
         end
       end
 
@@ -47,7 +50,7 @@ module MongoMapper
           to_slug = self[options[:to_slug]]
           return if to_slug.blank?
 
-          the_slug = raw_slug = to_slug.send(options[:method]).to_s
+          the_slug = raw_slug = to_slug.send(options[:method]).to_s[0...options[:max_length]]
 
           conds = {}
           conds[options[:key]]   = the_slug
