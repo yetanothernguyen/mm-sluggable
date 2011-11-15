@@ -6,14 +6,13 @@ module MongoMapper
       extend ActiveSupport::Concern
 
       module ClassMethods
-        alias_method :origin_find, :find
         def find(*args)
           arg_f = args.first
           if (args.size == 1) && arg_f.is_a?(String) && ( arg_f !~ /^[0-9a-f]{24}$/i )
             options = slug_options
             first options[:key] => arg_f
           else
-            origin_find *args
+            super *args
           end
         end
 
