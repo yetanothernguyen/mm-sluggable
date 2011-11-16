@@ -14,12 +14,12 @@ task :default => :spec
 spec = Gem::Specification.new do |s|
 
   # Change these as appropriate
-  s.name              = "mm-sluggable"
-  s.version           = "0.2.1"
+  s.name              = "zhaorong-mm-sluggable"
+  s.version           = "0.0.3"
   s.summary           = "Tiny plugin for MongoMapper to cache a slugged version of a field"
   s.author            = "Richard Livsey"
   s.email             = "richard@livsey.org"
-  s.homepage          = "http://github.com/rlivsey/mm-sluggable"
+  s.homepage          = "http://github.com/zhaorong/mm-sluggable"
 
   s.has_rdoc          = true
   s.extra_rdoc_files  = %w(README.rdoc)
